@@ -22,7 +22,11 @@ class TwitterClawler:
         auth = tweepy.OAuthHandler(api_key, api_secret)
         auth.set_access_token(access_token, access_token_secret)
 
-        self.api = tweepy.API(auth)
+        self.api = tweepy.API(
+            auth,
+            wait_on_rate_limit=True,
+            wait_on_rate_limit_notify=True
+        )
 
     def get_conversation(
             self,
@@ -30,7 +34,11 @@ class TwitterClawler:
             count: int = 100
     ) -> List[Conversation]:
 
-        results = self.api.search(q=[keyword], count=count)
+        results = self.api.search(
+            q=[keyword],
+            count=count,
+            result_type='recent'
+        )
         conversations = []
 
         for result in results:
