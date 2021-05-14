@@ -3,13 +3,15 @@ import tweepy
 from dataclasses import dataclass
 from typing import List
 
+from ikuta_ml.util.string_util import cleanse_tweet
+
 
 @dataclass()
 class Conversation:
     tweet_id: str
     tweet: str
-    responce_id: str
-    responce: str
+    reply_tweet_id: str
+    reply_tweet: str
 
 
 class TwitterClawler:
@@ -31,14 +33,17 @@ class TwitterClawler:
     def get_conversation(
             self,
             keyword: str,
-            count: int = 100
+            **kwargs,
     ) -> List[Conversation]:
 
-        results = self.api.search(
-            q=[keyword],
-            count=count,
-            result_type='recent'
-        )
+        # results = self.api.search(
+        #     q=[keyword],
+        #     count=count,
+        #     result_type='recent'
+        # )
+        results = tweepy.Cursor(
+            self.api.search, q=keyword, result_type='recent', **kwargs
+        ).items(1000)
         conversations = []
 
         for result in results:
@@ -53,7 +58,12 @@ class TwitterClawler:
                 continue
 
             conversations.append(
-                Conversation(tweet.id, tweet.text, result.id, result.text)
+                Conversation(
+                    tweet.id,
+                    cleanse_tweet(tweet.text),
+                    result.id,
+                    cleanse_tweet(result.text),
+                )
             )
 
         return conversations
