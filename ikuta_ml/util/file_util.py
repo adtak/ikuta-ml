@@ -8,6 +8,7 @@ def write_csv_from_list(
     data: List[Any],  # mainly dataclass
     dir_path: Path,
     file_name: str,
+    mode: str = 'x'
 ) -> Path:
     dir_path.mkdir(parents=True, exist_ok=True)
     file_path = dir_path / file_name
@@ -15,8 +16,9 @@ def write_csv_from_list(
     df = DataFrame(data)
     df.to_csv(
         file_path,
+        mode=mode,
         encoding='utf-8',
-        header=True,
+        header=False if mode == 'a' else True,
         index=False,
         quoting=QUOTE_ALL,
     )
