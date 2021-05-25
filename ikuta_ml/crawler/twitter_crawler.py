@@ -10,8 +10,10 @@ from ikuta_ml.util.string_util import cleanse_tweet
 class Conversation:
     tweet_id: str
     tweet: str
+    raw_tweet: str
     reply_tweet_id: str
     reply_tweet: str
+    raw_reply_tweet: str
 
 
 class TwitterClawler:
@@ -26,6 +28,7 @@ class TwitterClawler:
 
         self.api = tweepy.API(
             auth,
+            retry_count=5,
             wait_on_rate_limit=True,
             wait_on_rate_limit_notify=True
         )
@@ -33,20 +36,16 @@ class TwitterClawler:
     def get_conversation(
             self,
             keyword: str,
+            limit: int = 0,
             **kwargs,
     ) -> List[Conversation]:
-
-        # results = self.api.search(
-        #     q=[keyword],
-        #     count=count,
-        #     result_type='recent'
-        # )
-        results = tweepy.Cursor(
-            self.api.search, q=keyword, result_type='recent', **kwargs
-        ).items(1000)
+        result_type = kwargs.get('result_type', 'recent')
+        tweepy_cursor = tweepy.Cursor(
+            self.api.search, q=keyword, result_type=result_type, **kwargs
+        ).items(limit)
         conversations = []
 
-        for result in results:
+        for result in tweepy_cursor:
             tweet_id = result.in_reply_to_status_id
             if not tweet_id:
                 continue
@@ -61,8 +60,10 @@ class TwitterClawler:
                 Conversation(
                     tweet.id,
                     cleanse_tweet(tweet.text),
+                    tweet.text,
                     result.id,
                     cleanse_tweet(result.text),
+                    result.text,
                 )
             )
 
