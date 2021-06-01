@@ -22,5 +22,7 @@ def cleanse_tweet(tweet: str) -> str:
     tweet = re.sub('。+', '。', tweet)
     # 句点+？or！は？or！に変換
     tweet = re.sub('。?([？！])。?', r'\1', tweet)
+    # 半角スペースを全角スペースに変換
+    tweet = tweet.replace(' ', '　')
 
     return tweet
