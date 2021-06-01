@@ -17,15 +17,15 @@ class Conversation:
     raw_reply_tweet: str
 
     @classmethod
-    def from_df(cls, df: DataFrame) -> 'Conversation':
-        cls(
-            df['tweet_id'],
-            df['tweet'],
-            df['raw_tweet'],
-            df['reply_tweet_id'],
-            df['reply_tweet'],
-            df['raw_reply_tweet'],
-        )
+    def from_df(cls, df: DataFrame) -> List['Conversation']:
+        return [cls(
+            series['tweet_id'],
+            series['tweet'],
+            series['raw_tweet'],
+            series['reply_tweet_id'],
+            series['reply_tweet'],
+            series['raw_reply_tweet'],
+        ) for _, series in df.iterrows()]
 
 
 class TwitterClawler:
