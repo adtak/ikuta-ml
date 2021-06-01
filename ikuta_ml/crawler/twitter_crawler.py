@@ -1,6 +1,7 @@
 import os
 import tweepy
 from dataclasses import dataclass
+from pandas import DataFrame
 from typing import List
 
 from ikuta_ml.util.string_util import cleanse_tweet
@@ -14,6 +15,17 @@ class Conversation:
     reply_tweet_id: str
     reply_tweet: str
     raw_reply_tweet: str
+
+    @classmethod
+    def from_df(cls, df: DataFrame) -> 'Conversation':
+        cls(
+            df['tweet_id'],
+            df['tweet'],
+            df['raw_tweet'],
+            df['reply_tweet_id'],
+            df['reply_tweet'],
+            df['raw_reply_tweet'],
+        )
 
 
 class TwitterClawler:
