@@ -1,5 +1,6 @@
 import numpy as np
 from dataclasses import dataclass
+from tensorflow.keras.utils import to_categorical
 from typing import Dict, List, Tuple
 
 import ikuta_ml.util.preprocess_util as pu
@@ -19,21 +20,25 @@ class PreprocessResult:
         sos_index: int,
         eos_index: int
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        encoder_inputs = [
-            [sos_index] + input for input in self.tweet_converted_idx
-        ]
-        decoder_inputs = [
-            [sos_index] + input for input in self.replay_converted_idx
-        ]
+        encoder_inputs = pu.pad_post_zero(
+            input=list(map(lambda x: [sos_index] + x, self.tweet_converted_idx)),
+            maxlen=maxlen
+        )
+        decoder_inputs = pu.pad_post_zero(
+            input=list(map(lambda x: [sos_index] + x, self.replay_converted_idx)),
+            maxlen=maxlen
+        )
         # maxlenを超えている場合、paddingする際に切り捨てるが、EOSが切り捨てられると困るのであらかじめ対応
-        decoder_labels = [
-            input[:maxlen-1] + [eos_index] for input in self.replay_converted_idx
-        ]
+        decoder_labels = pu.pad_post_zero(
+            input=list(map(lambda x: x[:maxlen-1] + [eos_index], self.replay_converted_idx)),
+            maxlen=maxlen
+        )
 
         return (
-            pu.pad_post_zero(encoder_inputs, maxlen),
-            pu.pad_post_zero(decoder_inputs, maxlen),
-            pu.pad_post_zero(decoder_labels, maxlen)
+            encoder_inputs,
+            decoder_inputs,
+            # indexをone-hotに変換
+            to_categorical(decoder_labels, max(self.i2w_dict)+1)
         )
 
 
