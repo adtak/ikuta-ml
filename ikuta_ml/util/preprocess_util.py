@@ -22,7 +22,7 @@ def convert_to_index(
 
 def pad_post_zero(
     input: List[List[str]],
-    maxlen: int = 140,
+    maxlen: int,
 ) -> np.ndarray:
     """
     >>> sequence = [[1], [2, 3], [4, 5, 6]]

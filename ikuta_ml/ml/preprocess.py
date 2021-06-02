@@ -1,3 +1,4 @@
+import numpy as np
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
@@ -11,6 +12,29 @@ class PreprocessResult:
     replay_converted_idx: List[List[int]]
     w2i_dict: Dict[str, int]
     i2w_dict: Dict[int, str]
+
+    def create_train_data(
+        self,
+        maxlen: int,
+        sos_index: int,
+        eos_index: int
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        encoder_inputs = [
+            [sos_index] + input for input in self.tweet_converted_idx
+        ]
+        decoder_inputs = [
+            [sos_index] + input for input in self.replay_converted_idx
+        ]
+        # maxlenを超えている場合、paddingする際に切り捨てるが、EOSが切り捨てられると困るのであらかじめ対応
+        decoder_labels = [
+            input[:maxlen-1] + [eos_index] for input in self.replay_converted_idx
+        ]
+
+        return (
+            pu.pad_post_zero(encoder_inputs, maxlen),
+            pu.pad_post_zero(decoder_inputs, maxlen),
+            pu.pad_post_zero(decoder_labels, maxlen)
+        )
 
 
 class Preprocesser:
@@ -34,12 +58,10 @@ class Preprocesser:
 
         w2i_dict, i2w_dict = self._create_dict(all_words)
 
-        tweet_converted_idx = pu.pad_post_zero(
+        tweet_converted_idx = \
             self._convert_texts_to_index(splitted_tweet_list, w2i_dict)
-        )
-        replay_converted_idx = pu.pad_post_zero(
+        replay_converted_idx = \
             self._convert_texts_to_index(splitted_replay_list, w2i_dict)
-        )
 
         return PreprocessResult(
             tweet_converted_idx,
