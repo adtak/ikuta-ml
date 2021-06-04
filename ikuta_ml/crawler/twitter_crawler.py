@@ -1,9 +1,13 @@
+import datetime as dt
 import os
 import tweepy
 from dataclasses import dataclass
 from pandas import DataFrame
+from pathlib import Path
+from string import Template
 from typing import List
 
+import ikuta_ml.util.file_util as fu
 from ikuta_ml.util.string_util import cleanse_tweet
 
 
@@ -29,7 +33,10 @@ class Conversation:
 
 
 class TwitterClawler:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        output_dir_path: Path,
+    ) -> None:
         api_key = os.environ['API_KEY']
         api_secret = os.environ['API_SECRET']
         access_token = os.environ['ACCESS_TOKEN']
@@ -45,6 +52,11 @@ class TwitterClawler:
             wait_on_rate_limit_notify=True
         )
 
+        self.output_dir_path = output_dir_path
+        self.output_file_name_template = Template(
+            dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '_conversation_${number}.csv'
+        )
+
     def get_conversation(
             self,
             keyword: str,
@@ -55,7 +67,9 @@ class TwitterClawler:
         tweepy_cursor = tweepy.Cursor(
             self.api.search, q=keyword, result_type=result_type, **kwargs
         ).items(limit)
+
         conversations = []
+        cnt = 0
 
         for result in tweepy_cursor:
             tweet_id = result.in_reply_to_status_id
@@ -78,5 +92,14 @@ class TwitterClawler:
                     result.text,
                 )
             )
+
+            if len(conversations) > 10_000:
+                fu.write_csv_from_list(
+                    conversations,
+                    self.output_dir_path,
+                    self.output_file_name_template.substitute(number=cnt)
+                )
+                conversations = []
+                cnt += 1
 
         return conversations
