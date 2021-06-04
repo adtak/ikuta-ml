@@ -67,12 +67,11 @@ class TwitterClawler:
     def get_conversation(
             self,
             keyword: str,
+            since_id: str = None,
             limit: int = 0,
-            **kwargs,
     ) -> List[Conversation]:
-        result_type = kwargs.get('result_type', 'recent')
         tweepy_cursor = tweepy.Cursor(
-            self.api.search, q=keyword, result_type=result_type, **kwargs
+            self.api.search, q=keyword, result_type='recent', since_id=since_id
         ).items(limit)
 
         conversations = []
@@ -101,6 +100,7 @@ class TwitterClawler:
             )
 
             if len(conversations) >= self.max_records_per_file:
+                print(f'get {len(conversations)} conversations. output once.')
                 fu.write_csv_from_list(
                     conversations,
                     self.output_dir_path,
