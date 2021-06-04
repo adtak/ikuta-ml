@@ -36,7 +36,19 @@ class TwitterClawler:
     def __init__(
         self,
         output_dir_path: Path,
+        max_records_per_file: int = 10_000,
     ) -> None:
+
+        self.api = self._init_tweepy()
+
+        self.output_dir_path = output_dir_path
+        self.output_file_name_template = Template(
+            dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '_conversation_${number}.csv'
+        )
+
+        self.max_records_per_file = max_records_per_file
+
+    def _init_tweepy(self):
         api_key = os.environ['API_KEY']
         api_secret = os.environ['API_SECRET']
         access_token = os.environ['ACCESS_TOKEN']
@@ -45,16 +57,11 @@ class TwitterClawler:
         auth = tweepy.OAuthHandler(api_key, api_secret)
         auth.set_access_token(access_token, access_token_secret)
 
-        self.api = tweepy.API(
+        return tweepy.API(
             auth,
             retry_count=5,
             wait_on_rate_limit=True,
             wait_on_rate_limit_notify=True
-        )
-
-        self.output_dir_path = output_dir_path
-        self.output_file_name_template = Template(
-            dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '_conversation_${number}.csv'
         )
 
     def get_conversation(
@@ -93,7 +100,7 @@ class TwitterClawler:
                 )
             )
 
-            if len(conversations) > 10_000:
+            if len(conversations) >= self.max_records_per_file:
                 fu.write_csv_from_list(
                     conversations,
                     self.output_dir_path,
