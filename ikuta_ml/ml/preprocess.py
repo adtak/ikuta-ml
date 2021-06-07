@@ -1,5 +1,7 @@
 import numpy as np
+import pickle
 from dataclasses import dataclass
+from pathlib import Path
 from tensorflow.keras.utils import to_categorical
 from typing import Dict, List, Tuple
 
@@ -40,6 +42,15 @@ class PreprocessResult:
             # indexをone-hotに変換
             to_categorical(decoder_labels, max(self.i2w_dict)+1)
         )
+
+    def save(self, output_dir: Path, file_name: str):
+        with open(output_dir / file_name, 'wb') as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def load(input_dir: Path, file_name: str):
+        with open(input_dir / file_name, 'rb') as f:
+            return pickle.load(f)
 
 
 class Preprocesser:
