@@ -10,7 +10,11 @@ def main():
     args = _parse_args()
 
     df = read_csv(Path(args.input_dir), '20210604_085437_conversation_0.csv')
-    converted_data = Conversation.from_df(df.dropna())
+    # TODO: @はpyknpでindexエラーになるので対象外。対象外にする処理を他に移動したい。
+    df = df.dropna()
+    mask = df['tweet'].str.contains('@') | df['reply_tweet'].str.contains('@')
+    df = df[~mask]
+    converted_data = Conversation.from_df(df)
 
     preprocesser = Preprocesser(converted_data)
     preprocess_result = preprocesser.run()
