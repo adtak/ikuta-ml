@@ -34,7 +34,7 @@ def main():
     )
     seq2seq = Seq2Seq.for_train(setting)
 
-    hist = seq2seq.fit(encoder_x[:5], decoder_x[:5], decoder_y[:5], 1, 10)
+    hist = seq2seq.fit(encoder_x, decoder_x, decoder_y, args.batch_size, args.epochs)
     print(hist)
 
     _save_loss_plot(hist, output_dir_path)
@@ -47,6 +47,8 @@ def _parse_args():
     parser.add_argument('-i', '--input_dir', default='datasets')
     parser.add_argument('-o', '--output_dir', default='train_results')
     parser.add_argument('-l', '--label', default=dt.datetime.now().strftime('%Y%m%d_%H%M%S'))
+    parser.add_argument('-b', '--batch_size', required=True, type=int)
+    parser.add_argument('-e', '--epochs', required=True, type=int)
 
     return parser.parse_args()
 
