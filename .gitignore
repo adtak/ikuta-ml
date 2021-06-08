@@ -131,4 +131,5 @@ dmypy.json
 # others
 .vscode
 datasets
+train_results
 .DS_Store
