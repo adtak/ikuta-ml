@@ -10,8 +10,7 @@ def split_text_morphemes(text: str) -> List[str]:
 
 
 def split_texts_morphemes(texts: List[str]) -> List[List[str]]:
-    # TODO: @はpyknpでindexエラーになるので対象外。対象外にする処理を他に移動したい。
-    return [split_text_morphemes(t) for t in texts if '@' not in t]
+    return [split_text_morphemes(t) for t in texts]
 
 
 def convert_to_index(
