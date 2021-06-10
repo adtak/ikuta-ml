@@ -81,7 +81,9 @@ class Seq2Seq:
         decoder_out = self.decoder_dense(x)
 
         self.train_model = Model([encoder_in, decoder_in], decoder_out)
-        self.train_model.compile(loss="mean_squared_error", optimizer="sgd")
+        # labelはone-hotなので、categorical_crossentropyを使う
+        # 逆にsparse_categorical_crossentropyを使えばone-hotにせずインデックス番号で良い？
+        self.train_model.compile(loss='categorical_crossentropy', optimizer='adam')
 
         return encoder_in, encoder_states
 
