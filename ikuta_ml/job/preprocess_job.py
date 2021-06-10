@@ -14,6 +14,11 @@ def main():
     df = df.dropna()
     mask = df['tweet'].str.contains('@') | df['reply_tweet'].str.contains('@')
     df = df[~mask]
+    mask = (df['tweet'].str.len() > 1) & (df['reply_tweet'].str.len() > 1)
+    df = df[mask]
+    mask = (df['tweet'].str.len() < 70) & (df['reply_tweet'].str.len() < 70)
+    df = df[mask]
+
     converted_data = Conversation.from_df(df)
 
     preprocesser = Preprocesser(converted_data)

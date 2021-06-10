@@ -7,11 +7,18 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict
 
+# import tensorflow as tf
+
 from ikuta_ml.ml.preprocess import PreprocessResult
 from ikuta_ml.ml.seq2seq import Seq2Seq, Seq2SeqSetting
 
 
 def main():
+    # physical_devices = tf.config.list_physical_devices('GPU')
+    # for device in physical_devices:
+    #     tf.config.experimental.set_memory_growth(device, True)
+    #     print(f'{device} memory growth: {tf.config.experimental.get_memory_growth(device)}')
+
     args = _parse_args()
     input_dir_path = Path(args.input_dir)
     output_dir_path = Path(args.output_dir) / args.label
@@ -20,13 +27,13 @@ def main():
     preprocess_result = PreprocessResult.load(input_dir_path, 'preprocess_result.pickle')
 
     encoder_x, decoder_x, decoder_y = preprocess_result.create_train_data(
-        140,
+        70,
         Seq2Seq.SOS_TOKEN,
         Seq2Seq.EOS_TOKEN
     )
 
     setting = Seq2SeqSetting(
-        timestep=140,
+        timestep=70,
         lstm_units=32,
         embedding_input=max(preprocess_result.i2w_dict)+1,  # max index + 1
         embedding_output=64,
