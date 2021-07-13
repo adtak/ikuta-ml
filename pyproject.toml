@@ -2,7 +2,7 @@
 name = "ikuta-ml"
 version = "0.1.0"
 description = ""
-authors = ["adtak <adtak62@gmail.com>"]
+authors = ["adtak <adtak>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
