@@ -41,8 +41,10 @@ class Seq2Seq:
     @classmethod
     def for_predict(cls, output_dir_path: Path):
         seq2seq = cls()
+        print("load encoder model")
         seq2seq.pred_encoder_model = load_model(output_dir_path / 'pred_encoder_model')
-        seq2seq.pred_decoder_model = load_model(output_dir_path / 'pred_encoder_model')
+        print("load decoder model")
+        seq2seq.pred_decoder_model = load_model(output_dir_path / 'pred_decoder_model')
         return seq2seq
 
     def _init_layer(self):
@@ -120,22 +122,26 @@ class Seq2Seq:
         )
         return history.history  # epoch毎のloss
 
-    def predict(self, input, i2w_dict: Dict[int, str]) -> List[str]:
+    def predict(
+        self,
+        input: np.ndarray,  # input.shape => (1, timestep)
+        i2w_dict: Dict[int, str],
+    ) -> List[str]:
         result = []
+        timestep = input.shape[1]
         state_value = self.pred_encoder_model.predict(input)
-        input = [np.array([[Seq2Seq.SOS_TOKEN]])]
+        input_word = [np.array([[Seq2Seq.SOS_TOKEN]])]
 
-        for _ in range(self.settings.timestep):
-            y, h, c = self.pred_decoder_model.predict(input + state_value)
-
-            if y[0][0] == Seq2Seq.EOS_TOKEN:
-                break
+        for _ in range(timestep):
+            y, h, c = self.pred_decoder_model.predict(input_word + state_value)
 
             max_index = np.argmax(y[0][0])
+            if max_index == Seq2Seq.EOS_TOKEN:
+                break
             result.append(i2w_dict[max_index])
 
             state_value = [h, c]
-            input = [np.array([[max_index]])]
+            input_word = [np.array([[max_index]])]
 
         return result
 
