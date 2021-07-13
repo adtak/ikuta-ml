@@ -21,7 +21,7 @@ def convert_to_index(
 
 
 def pad_post_zero(
-    input: List[List[str]],
+    input: List[List[int]],
     maxlen: int,
 ) -> np.ndarray:
     """
